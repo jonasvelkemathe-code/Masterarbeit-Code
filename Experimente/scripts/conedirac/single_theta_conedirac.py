@@ -17,7 +17,7 @@ from w1lab.train import (
 #Wir setzen hier die Parameter für die Algorithmen und die Dimension der Wahrscheinlichkeitsverteilung
 DIM = 16
 
-STEPS = 40
+STEPS = 400
 BS = 512
 LR = 1e-3
 EVAL_MC = 10000
