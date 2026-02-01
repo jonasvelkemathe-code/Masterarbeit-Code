@@ -7,33 +7,35 @@ import matplotlib.pyplot as plt
 import torch
 
 from w1lab.models import make_critic
-from w1lab.data import make_provider_cone_dirac_shell
+from w1lab.data import make_provider_gauss_shift
 from w1lab.train import (
     train_dual_constrained,
     train_dual_parseval_projected,
     train_dual_linf_projected,
 )
 
-#Wir setzen hier die Parameter für die Algorithmen und die Dimension der Wahrscheinlichkeitsverteilung
-DIM = 16
-
-STEPS = 400
+#Wir setzen hier die Parameter für den Algorithmus
+DIM = 64
+SHIFT = 1.0
+STEPS = 40
 BS = 512
 LR = 1e-3
 EVAL_MC = 10000
 LOG_EVERY = 20
 
-WIDTH = 256
-DEPTH = 4
+WIDTH = 128
+DEPTH = 3
 
 BJORCK_ITERS = 3
+
 PARSEVAL_BETA = 0.5
 PARSEVAL_PROJ_ITERS = 1
+
 LINF_TAU = 1.0
 LINF_PROJ_ITERS = 1
 
 SEED = 123
-OUTDIR = Path("runs/conedirac/single_theta")
+OUTDIR = Path("runs/gauss/single_theta")
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -42,8 +44,7 @@ torch.manual_seed(SEED)
 if device == "cuda":
     torch.cuda.manual_seed_all(SEED)
 
-
-provider = make_provider_cone_dirac_shell(DIM, device)
+provider = make_provider_gauss_shift(DIM, SHIFT, device)
 
 methods = ["bjorck", "spectral", "parseval", "zeilenp"]
 labels = {"bjorck": "Björck", "spectral": "Spectral", "parseval": "Parseval", "zeilenp": "ZeilenP"}
@@ -88,6 +89,7 @@ for method in methods:
         curve_paths[method] = log_path
 
     elif method == "zeilenp":
+
         critic = make_critic(d=DIM, width=WIDTH, depth=DEPTH, method="parseval").to(device)
         log_path = OUTDIR / "curve_zeilenp.csv"
         train_dual_linf_projected(
@@ -102,23 +104,24 @@ for method in methods:
 
 XCOL = "step"
 YCOL = "dual"
-
 plt.figure(figsize=(10, 6))
 for method in methods:
     df = pd.read_csv(curve_paths[method])
     plt.plot(df[XCOL], df[YCOL], label=labels[method])
 
-plt.axhline(1.0, linestyle="--", linewidth=1)  # true_w1 = 1.0
+plt.axhline(abs(SHIFT), linestyle="--", linewidth=1)
 
 plt.xlabel("Iteration")
 plt.ylabel(r"Schätzer $\hat d_D$")
-plt.title(rf":Hochdimensionale Kegelverteilung (Radius=1, d={DIM})")
+plt.title(rf"Gauss: $|\theta|={abs(SHIFT)}$, $d={DIM}$)")
 plt.grid(True)
-plt.ylim(0, 1.2)
 plt.legend()
 plt.tight_layout()
 
-out_png = OUTDIR / "vergleich_methoden_conedirac_single_theta.png"
+out_png = OUTDIR / "vergleich_methoden_gauss_single_theta.png"
 plt.savefig(out_png, dpi=200)
+
+
 plt.show()
+
 
