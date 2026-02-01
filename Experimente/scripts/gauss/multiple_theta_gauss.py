@@ -18,7 +18,7 @@ from w1lab.train import (
 DIM = 64
 THETAS = [2.0 * i / 19 for i in range(20)]  # 20 Werte von 0 bis 2 (inkl.)
 
-STEPS = 20
+STEPS = 200
 BS = 512
 LR = 1e-3
 EVAL_MC = 10000
