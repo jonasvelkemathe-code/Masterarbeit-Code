@@ -17,7 +17,7 @@ from w1lab.train import (
 #Wir setzen hier die Parameter für den Algorithmus
 DIM = 64
 SHIFT = 1.0
-STEPS = 40
+STEPS = 400
 BS = 512
 LR = 1e-3
 EVAL_MC = 10000
